@@ -1,0 +1,35 @@
+log_format upstreamlog '$server_name to: $upstream_addr [$request] '
+  'upstream_response_time $upstream_response_time '
+  'msec $msec request_time $request_time';
+
+
+upstream {{ upstream_name }} {
+  {% if server_address is iterable and (server_address is not string and server_address is not mapping) %}
+    {% for address in server_address %}
+  server {{ address }}:{{ server_port }};
+    {% endfor %}
+  {% endif %}
+}
+
+server {
+  listen 80;
+  server_name {{ server_name }};
+  return 301 https://{{ server_name }}$request_uri;
+}
+
+server {
+  listen 443 ssl;
+  server_name {{ server_name }};
+
+  ssl_certificate /home/vagrant/.cert/server.cert.pem;
+  ssl_certificate_key /home/vagrant/.cert/server.key.pem;
+
+  access_log /var/log/nginx/access.log upstreamlog;
+
+  location / {
+    proxy_pass http://{{ upstream_name }};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}

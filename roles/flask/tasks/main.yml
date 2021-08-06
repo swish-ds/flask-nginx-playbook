@@ -1,0 +1,9 @@
+---
+- name: Create a docker-ci-code container
+  community.docker.docker_container:
+    name: docker-ci-code-container
+    image: swishds/docker-ci-code-image:latest
+    ports:
+      - 8000:8000
+    state: started
+    pull: yes

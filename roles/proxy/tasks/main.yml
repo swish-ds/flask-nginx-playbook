@@ -1,0 +1,14 @@
+---
+- name: Install nginx
+  yum:
+    name: nginx
+    state: present
+
+- name: Copy nginx config file
+  template:
+    src: files/docker-ci-code.j2
+    dest: /etc/nginx/conf.d/docker-ci-code.conf
+    trim_blocks: yes
+    lstrip_blocks: yes
+  changed_when: yes
+  notify: restart nginx
